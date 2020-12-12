@@ -12,7 +12,7 @@ namespace DOTNET_RPG.Sevices
 {
     public class CharacterService : ICharacterService
     {
-        //test
+        //test 
         private static List<Character> characters = new List<Character>{
         new Character(){Id=0},
         new Character(){Name="same",Id=1}};
