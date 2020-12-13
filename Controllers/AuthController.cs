@@ -13,9 +13,10 @@ namespace DOTNET_RPG.Controllers
     [Route("[controller]")]
     public class AuthController : ControllerBase
     {
+        //test
         private readonly IAuthRepository _authRepo;
         public AuthController(IAuthRepository authRepo)=>
-            _authRepo = authRepo;
+            _authRepo = authRepo; 
 
         [HttpPost("Register")]
         public async Task<IActionResult> Register(UserRegisterDto request)
