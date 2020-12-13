@@ -3,20 +3,41 @@ using System.Threading.Tasks;
 using DOTNET_RPG.Models;
 using DOTNET_RPG.Sevices;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace DOTNET_RPG.Data
 {
     public class AuthRepository : IAuthRepository
     {
         private readonly DataContext _DbContext;
+
         public AuthRepository(DataContext dbcontext)
         {
             _DbContext = dbcontext;
         }
-        public Task<ServiceResponse<string>> Login(string username, string password)
+
+        public async Task<ServiceResponse<string>> Login(string username, string password)
         {
-            throw new System.NotImplementedException();
+            ServiceResponse<string> response = new ServiceResponse<string>();
+            User user = await _DbContext.Users.FirstOrDefaultAsync(u => u.Username.ToLower().Equals(username.ToLower()));
+            if (user == null)
+            {
+                response.DATA = null;
+                response.message = "user not found.";
+                response.success = false;
+            }
+            else if (!VerifyPassword(password, user.PasswordHash, user.PasswordSalt))
+            {
+                response.success = false;
+                response.message = "Wrong password!";
+            }
+            else
+                response.DATA = CreateToken(user);
+
+            return response;
         }
+
+
 
         public async Task<ServiceResponse<int>> Register(User user, string password)
         {
@@ -45,11 +66,28 @@ namespace DOTNET_RPG.Data
 
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
-            using (var hmac = new System.Security.Cryptography.HMACSHA512())
+            using (var hmac = new HMACSHA512())
             {
                 passwordSalt = hmac.Key;
                 passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
             }
+        }
+
+        public bool VerifyPassword(string password, byte[] passwordHash, byte[] passwordSalt)
+        {
+            using (var hmac = new HMACSHA512(passwordSalt))
+            {
+                var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+                for (int i = 0; i < computedHash.Length; i++)
+                    if (computedHash[i] != passwordHash[i])
+                        return false;
+                return true;
+            }
+        }
+
+        private string CreateToken(User user)
+        {
+            return string.Empty;
         }
     }
 }
