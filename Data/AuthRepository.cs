@@ -4,16 +4,22 @@ using DOTNET_RPG.Models;
 using DOTNET_RPG.Sevices;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
+using System.Collections.Generic;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.Extensions.Configuration;
 
 namespace DOTNET_RPG.Data
 {
     public class AuthRepository : IAuthRepository
     {
         private readonly DataContext _DbContext;
-
-        public AuthRepository(DataContext dbcontext)
+        private readonly IConfiguration _configuration;
+        public AuthRepository(DataContext dbcontext, IConfiguration configuration)
         {
             _DbContext = dbcontext;
+            _configuration = configuration;
         }
 
         public async Task<ServiceResponse<string>> Login(string username, string password)
@@ -36,8 +42,6 @@ namespace DOTNET_RPG.Data
 
             return response;
         }
-
-
 
         public async Task<ServiceResponse<int>> Register(User user, string password)
         {
@@ -76,7 +80,7 @@ namespace DOTNET_RPG.Data
         public bool VerifyPassword(string password, byte[] passwordHash, byte[] passwordSalt)
         {
             using (var hmac = new HMACSHA512(passwordSalt))
-            {
+            { 
                 var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
                 for (int i = 0; i < computedHash.Length; i++)
                     if (computedHash[i] != passwordHash[i])
@@ -87,7 +91,12 @@ namespace DOTNET_RPG.Data
 
         private string CreateToken(User user)
         {
-            return string.Empty;
+            List<Claim> claims = new List<Claim>{
+                new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
+                new Claim(ClaimTypes.Name,user.Username)
+            };
+            SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
+            SigningCredentials credentials=new SigningCredentials(key,SecurityAlgorithms.HmacSha512Signature);
         }
     }
 }
