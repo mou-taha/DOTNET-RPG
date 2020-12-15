@@ -34,11 +34,11 @@ namespace DOTNET_RPG.Sevices
             };
         }
 
-        public async Task<ServiceResponse<List<GetCharacterDto>>> getAllCharacters()
+        public async Task<ServiceResponse<List<GetCharacterDto>>> getAllCharacters(int id)
         {
             return new ServiceResponse<List<GetCharacterDto>>
             {
-                DATA = (_context.characters.ToList().Select(c => _mapper.Map<GetCharacterDto>(c))).ToList()
+                DATA = (_context.characters.Where(c=>c.User.Id==id).ToList().Select(c => _mapper.Map<GetCharacterDto>(c))).ToList()
             };
         }
 

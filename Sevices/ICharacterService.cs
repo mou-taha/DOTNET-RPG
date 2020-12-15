@@ -8,7 +8,7 @@ namespace DOTNET_RPG.Sevices
 {
     public interface ICharacterService
     {
-        Task<ServiceResponse<List<GetCharacterDto>>> getAllCharacters();
+        Task<ServiceResponse<List<GetCharacterDto>>> getAllCharacters(int id);
         Task<ServiceResponse<GetCharacterDto>> GetCharacterById(int id);
         Task<ServiceResponse<List<GetCharacterDto>>> AddCharacter(AddCharacterDto newCharacter);
         Task<ServiceResponse<GetCharacterDto>> UpdateCharacter(UpdateCharacterDto updateCharacter);

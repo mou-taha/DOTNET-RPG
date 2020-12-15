@@ -1,14 +1,16 @@
 using System;
-
+using System.Text;
 using AutoMapper;
 using DOTNET_RPG.Data;
 using DOTNET_RPG.Sevices;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 namespace DOTNET_RPG
@@ -30,11 +32,18 @@ namespace DOTNET_RPG
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "DOTNET_RPG", Version = "v1" });
-                c.SwaggerDoc("v2", new OpenApiInfo { Title = "DOTNET_RPG2", Version = "v2" });
             });
             services.AddScoped<ICharacterService, CharacterService>();
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddAutoMapper(typeof(Startup));
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options=>{
+                options.TokenValidationParameters=new TokenValidationParameters{
+                    ValidateIssuerSigningKey=true,
+                    IssuerSigningKey=new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetSection("AppSettings:Token").Value)),
+                    ValidateIssuer=false,
+                    ValidateAudience=false
+                };
+            });
         }
 
         private object icharacterservice(IServiceProvider arg)
@@ -55,7 +64,7 @@ namespace DOTNET_RPG
             app.UseHttpsRedirection();
 
             app.UseRouting();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
