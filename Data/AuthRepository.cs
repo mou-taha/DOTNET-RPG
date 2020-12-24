@@ -52,7 +52,7 @@ namespace DOTNET_RPG.Data
                 response.message = "User already exists.";
                 return response;
             }
-            CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
+            Utility.CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
             await _DbContext.Users.AddAsync(user);
@@ -67,15 +67,8 @@ namespace DOTNET_RPG.Data
                 return true;
             return false;
         }
-
-        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
-        {
-            using (var hmac = new HMACSHA512())
-            {
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-            }
-        }
+   
+       
 
         public bool VerifyPassword(string password, byte[] passwordHash, byte[] passwordSalt)
         {
@@ -93,7 +86,8 @@ namespace DOTNET_RPG.Data
         {
             List<Claim> claims = new List<Claim>{
                 new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
-                new Claim(ClaimTypes.Name,user.Username)
+                new Claim(ClaimTypes.Name,user.Username),
+                new Claim(ClaimTypes.Role,user.Role)
             };
             SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
             SigningCredentials credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);

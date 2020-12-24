@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DOTNET_RPG.Controllers
 {
-    [Authorize]
+    [Authorize(Roles="Player,Admin")]
     [ApiController]
     [Route("[controller]")]
     public class CharacterController : ControllerBase
@@ -22,13 +22,12 @@ namespace DOTNET_RPG.Controllers
         {
             _CharacterService = characterservice;
         }
-
+        
        // [AllowAnonymous]
         [HttpGet("getAll")]
         public async Task<IActionResult> Get()
         {
-            int id=int.Parse(User.Claims.FirstOrDefault(u=>u.Type==ClaimTypes.NameIdentifier).Value);
-            return Ok(await _CharacterService.getAllCharacters(id));
+            return Ok(await _CharacterService.getAllCharacters());
         }
 
         [HttpGet("{id}")]
@@ -48,7 +47,7 @@ namespace DOTNET_RPG.Controllers
         {
             ServiceResponse<GetCharacterDto> serviceResponse = await _CharacterService.UpdateCharacter(updateCharacter);
             if (serviceResponse.DATA == null)
-                return NotFound(Response);
+                return NotFound(serviceResponse);
             return Ok(serviceResponse);
         }
 
@@ -57,7 +56,7 @@ namespace DOTNET_RPG.Controllers
         {
             ServiceResponse<List<GetCharacterDto>> serviceResponse = await _CharacterService.DeleteCharacter(id);
             if (serviceResponse.DATA == null)
-                return NotFound(Response);
+                return NotFound(serviceResponse);
             return Ok(serviceResponse);
         }
     }

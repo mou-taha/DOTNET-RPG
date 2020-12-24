@@ -3,9 +3,13 @@ using System.Text;
 using AutoMapper;
 using DOTNET_RPG.Data;
 using DOTNET_RPG.Sevices;
+using DOTNET_RPG.Sevices.CharacterSkill;
+using DOTNET_RPG.Sevices.FightService;
+using DOTNET_RPG.Sevices.WeaponService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +31,8 @@ namespace DOTNET_RPG
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<DataContext>(x => x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+           // services.AddDbContext<DataContext>(x => x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+             services.AddDbContext<DataContext>(x => x.UseSqlite(Configuration.GetConnectionString("SqliteConnection")));
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -35,6 +40,10 @@ namespace DOTNET_RPG
             });
             services.AddScoped<ICharacterService, CharacterService>();
             services.AddScoped<IAuthRepository, AuthRepository>();
+            services.AddScoped<IWeaponService, WeaponService>();
+            services.AddScoped<ICharacterSkillService,CharacterSkillService>();
+            services.AddScoped<IFightService,FightService>();
+            services.AddSingleton<IHttpContextAccessor,HttpContextAccessor>();
             services.AddAutoMapper(typeof(Startup));
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options=>{
                 options.TokenValidationParameters=new TokenValidationParameters{
